@@ -5,10 +5,12 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <string.h>
+#include <poll.h>
+#include <time.h>
 
 int main(int argc, char **argv) {
-    if (argc < 4) {
-        fprintf(stderr, "Usage: %s <bind_addr> <bind_port> <remote_dns> [timeout=500]\n", argv[0]);
+    if (argc < 5) {
+        fprintf(stderr, "Usage: %s <bind_addr> <bind_port> <remote_dns> <max_time>\n", argv[0]);
         exit(1);
     }
 
@@ -30,13 +32,13 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    struct timeval tv;
-    tv.tv_sec = 0;
-    tv.tv_usec = (argc == 5) ? atoi(argv[4]) : 500;
-    if (setsockopt(s_recv, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
-        fprintf(stderr, "[ERR] Can't set timeout: %s\n", strerror(errno));
-        exit(1);
-    }
+    struct pollfd fds[1];
+    memset(fds, 0 , sizeof(fds));
+    fds[0].fd = s_recv;
+    fds[0].events = POLLIN;
+    fds[0].revents = 0;
+
+    int max_time = atoi(argv[4]);
 
     while(1) {
         char buf[65535];
@@ -45,10 +47,10 @@ int main(int argc, char **argv) {
         if (n <= 0) continue;
         sendto(s_recv, buf, n, 0, (struct sockaddr *)&sin_remote, sizeof(sin_remote));
         while(1) {
-            sz = sizeof(sin_remote);
-            int n1 = recvfrom(s_recv, buf, sizeof(buf), 0, (struct sockaddr *)&sin_remote, &sz);
-            n = (n1 > 0) ? n1 : n;
-            if (n1 < 0) break;
+            if (poll(fds, 1, max_time) > 0) {
+                sz = sizeof(sin_remote);
+                n = recvfrom(s_recv, buf, sizeof(buf), 0, (struct sockaddr *)&sin_remote, &sz);
+            } else break;
         }
         sendto(s_bind, buf, n, 0, (struct sockaddr *)&sin_local, sizeof(sin_local));
     }
