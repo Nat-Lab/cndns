@@ -6,7 +6,6 @@
 #include <errno.h>
 #include <string.h>
 #include <poll.h>
-#include <time.h>
 
 int main(int argc, char **argv) {
     if (argc < 5) {
@@ -23,8 +22,8 @@ int main(int argc, char **argv) {
     sin_local.sin_addr.s_addr = inet_addr(argv[1]);
     sin_local.sin_port = htons(atoi(argv[2]));
 
-    sin_local.sin_family = AF_INET;
-    sin_remote.sin_addr.s_addr=inet_addr(argv[3]);
+    sin_remote.sin_family = AF_INET;
+    sin_remote.sin_addr.s_addr = inet_addr(argv[3]);
     sin_remote.sin_port = htons(53);
 
     if(bind(s_bind, (struct sockaddr *)&sin_local, sizeof(sin_local)) < 0) {
@@ -38,20 +37,18 @@ int main(int argc, char **argv) {
     fds[0].events = POLLIN;
     fds[0].revents = 0;
 
-    int max_time = atoi(argv[4]);
+    int max_time = atoi(argv[4]), n;
 
+    socklen_t sz;
+    char buf[65535];
     while(1) {
-        char buf[65535];
-        int sz = sizeof(sin_local);
-        int n = recvfrom(s_bind, buf, sizeof(buf), 0, (struct sockaddr *)&sin_local, &sz);
+        sz = sizeof(sin_local);
+        n = recvfrom(s_bind, buf, sizeof(buf), 0, (struct sockaddr *)&sin_local, &sz);
         if (n <= 0) continue;
         sendto(s_recv, buf, n, 0, (struct sockaddr *)&sin_remote, sizeof(sin_remote));
-        while(1) {
-            if (poll(fds, 1, max_time) > 0) {
-                sz = sizeof(sin_remote);
-                n = recvfrom(s_recv, buf, sizeof(buf), 0, (struct sockaddr *)&sin_remote, &sz);
-            } else break;
-        }
+        sz = sizeof(sin_remote);
+        while(poll(fds, 1, max_time))
+            n = recvfrom(s_recv, buf, sizeof(buf), 0, (struct sockaddr *)&sin_remote, &sz);
         sendto(s_bind, buf, n, 0, (struct sockaddr *)&sin_local, sizeof(sin_local));
     }
 }
