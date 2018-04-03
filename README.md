@@ -12,7 +12,8 @@ usage: ./cndns
    -M [max_time]       lookup timeout (ms) (default: min_time + 1000)
    -l [bind_addr]      local address (default: 0.0.0.0)
    -p [bind_port]      local port (default: 53)
-   -v                  verbose
+   -S                  strict mode (do nothing when timed out)
+   -v                  debug output
 ```
 
 `-s remote_dns`: 远端 DNS，即想要使用的 DNS 服务器。
@@ -24,6 +25,10 @@ usage: ./cndns
 `-l bind_addr`: 本地 DNS 监听地址（默认：0.0.0.0）。
 
 `-p bind_port`: 本地 DNS 监听端口（默认：53）。
+
+`-S`：严格模式（超时后不要返回最后接到的应答）。
+
+`-v`：输出每个应答抵达的时间。
 
 例如：
 

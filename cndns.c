@@ -9,7 +9,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#define VERSION "0.2"
+#define VERSION "0.2.1"
 
 void help(char *me) {
     fprintf(stderr, "cndns %s\n\n", VERSION);
@@ -19,18 +19,19 @@ void help(char *me) {
     fprintf(stderr, "   -M [max_time]       lookup timeout (ms) (default: min_time + 1000)\n");
     fprintf(stderr, "   -l [bind_addr]      local address (default: 0.0.0.0)\n");
     fprintf(stderr, "   -p [bind_port]      local port (default: 53)\n");
-    fprintf(stderr, "   -v                  verbose\n\n");
+    fprintf(stderr, "   -S                  strict mode (do nothing when timed out)\n");
+    fprintf(stderr, "   -v                  debug output\n\n");
     exit(EXIT_FAILURE);
 }
 
 int main(int argc, char **argv) {
     char *bindaddr = "0.0.0.0", *remoteaddr;
-    bool remoteaddr_set = false, mintime_set = false, debug = false;
+    bool remoteaddr_set = false, mintime_set = false, debug = false, strict = false;
     in_port_t bindport = 53;
     time_t min_time, max_time = 0;
     int opt;
 
-    while ((opt = getopt(argc, argv, "s:m:M:l:p:v")) != -1) {
+    while ((opt = getopt(argc, argv, "s:m:M:l:p:Sv")) != -1) {
         switch (opt) {
             case 's':
                 remoteaddr_set = true;
@@ -53,6 +54,9 @@ int main(int argc, char **argv) {
                 break;
             case 'v':
                 debug = true;
+                break;
+            case 'S':
+                strict = true;
                 break;
             default:
                 help(argv[0]);
@@ -112,6 +116,10 @@ int main(int argc, char **argv) {
             if (debug) fprintf(stderr, "[DEBUG] got a result in %ldms.\n", r_time);
         }
         if (debug) fprintf(stderr, "[DEBUG] final result obtained in %ldms, due to %s.\n", r_time, (ret == 0) ? "timeout" : "in range");
+        if (strict) {
+            if (debug) fprintf(stderr, "[DEBUG] strict mode, out-of-range final result discarded.\n");
+            continue;
+        }
         sendto(s_bind, buf, n, 0, (struct sockaddr *)&sin_local, sizeof(sin_local));
     }
 }
