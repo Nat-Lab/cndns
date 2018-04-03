@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
     char *bindaddr = "0.0.0.0", *remoteaddr;
     bool remoteaddr_set = false, mintime_set = false, debug = false, strict = false;
     in_port_t bindport = 53;
-    time_t min_time, max_time = 0;
+    time_t min_time = 0, max_time = 0;
     int opt;
 
     while ((opt = getopt(argc, argv, "s:m:M:l:p:Sv")) != -1) {
@@ -115,8 +115,8 @@ int main(int argc, char **argv) {
             r_time = 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000;
             if (debug) fprintf(stderr, "[DEBUG] got a result in %ldms.\n", r_time);
         }
-        if (debug) fprintf(stderr, "[DEBUG] final result obtained in %ldms, due to %s.\n", r_time, (ret == 0) ? "timeout" : "in range");
-        if (strict) {
+        if (debug) fprintf(stderr, "[DEBUG] final result obtained in %ldms, due to %s.\n", r_time, (!ret) ? "timeout" : "in range");
+        if (strict && !ret) {
             if (debug) fprintf(stderr, "[DEBUG] strict mode, out-of-range final result discarded.\n");
             continue;
         }
