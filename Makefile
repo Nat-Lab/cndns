@@ -1,7 +1,7 @@
 CFLAGS=-O3 -Wall
 OBJS=cndns.o
 
-eoip: $(OBJS)
+cndns: $(OBJS)
 	$(CC) $(CFLAGS) -o cndns $(OBJS)
 
 %.o: %.c
