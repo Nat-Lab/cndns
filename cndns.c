@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
         r_time = 0;
         // no clock_gettime(), since I want it to run on OSX.
         gettimeofday(&start, NULL);
-        while(r_time < min_time && (ret = poll(fds, 1, max_time))) {
+        while(r_time < min_time && (ret = poll(fds, 1, max_time - r_time))) {
             n = recvfrom(s_recv, buf, sizeof(buf), 0, (struct sockaddr *)&sin_remote, &sz);
             gettimeofday(&end, NULL);
             r_time = 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000;
