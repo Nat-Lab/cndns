@@ -9,7 +9,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#define VERSION "0.2.1"
+#define VERSION "0.2.2"
 
 void help(char *me) {
     fprintf(stderr, "cndns %s\n\n", VERSION);
@@ -35,9 +35,7 @@ int main(int argc, char **argv) {
         switch (opt) {
             case 's':
                 remoteaddr_set = true;
-                int len = strlen(optarg);
-                remoteaddr = malloc(len);
-                strcpy(remoteaddr, optarg);
+                remoteaddr = strdup(optarg);
                 break;
             case 'm':
                 mintime_set = true;
@@ -47,7 +45,7 @@ int main(int argc, char **argv) {
                 max_time = atoi(optarg);
                 break;
             case 'l':
-                strcpy(bindaddr, optarg);
+		bindaddr = strdup(optarg);
                 break;
             case 'p':
                 bindport = atoi(optarg);
