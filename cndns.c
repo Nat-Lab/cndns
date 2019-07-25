@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
                 max_time = atoi(optarg);
                 break;
             case 'l':
-		bindaddr = strdup(optarg);
+                bindaddr = strdup(optarg);
                 break;
             case 'p':
                 bindport = atoi(optarg);
